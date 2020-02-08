@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/adylanrff/cheer-up-bot/internal/config"
+	"github.com/adylanrff/cheer-up-bot/internal/handler"
+	"github.com/adylanrff/cheer-up-bot/pkg/tweettracker"
 	"gopkg.in/ini.v1"
 )
 
@@ -12,12 +14,26 @@ import (
 const CONFIGFILEPATH string = "config/config.ini"
 
 func main() {
-	cfg, err := ini.Load(CONFIGFILEPATH)
+	cfgFile, err := ini.Load(CONFIGFILEPATH)
 	if err != nil {
 		fmt.Printf("Fail to read file: %v", err)
 		os.Exit(1)
 	}
 
-	fmt.Println(config.NewConfig(cfg))
+	appConfig := config.NewConfig(cfgFile)
+
+	twitterConfig := tweettracker.TwitterConfig{
+		appConfig.APIKey,
+		appConfig.APISecretKey,
+		appConfig.AccessToken,
+		appConfig.AccessTokenSecret,
+		"Test",
+	}
+
+	cheerUpHandler := handler.NewCheerUpHandler()
+
 	fmt.Println("Running bot...")
+	tracker := tweettracker.NewTwitterAPI(&twitterConfig, cheerUpHandler)
+	tracker.Connect()
+
 }

@@ -18,21 +18,16 @@ type TwitterConfig struct {
 	Username          string
 }
 
-// Tweet : depicts the response body from the streaming Tweet API
-type Tweet struct {
-	ID              string `json:"id"`
-	CreatedAt       string `json:"created_at"`
-	Text            string `json:"text"`
-	AuthorID        string `json:"author_id"`
-	InReplyToUserID string `json:"in_reply_to_user_id"`
+type BearerTokenResponse struct {
+	AccessToken string `json:"access_token"`
 }
 
-func ParseTweet(jsonString []byte) (*Tweet, error) {
-	tweet := new(Tweet)
-	err := json.Unmarshal(jsonString, &tweet)
+func ParseBearerTokenResponse(jsonString []byte) (*BearerTokenResponse, error) {
+	bearerTokenResponse := new(BearerTokenResponse)
+	err := json.Unmarshal(jsonString, &bearerTokenResponse)
 	if err != nil {
 		log.Fatal("Failed parsing tweet", err.Error())
 		return nil, err
 	}
-	return tweet, err
+	return bearerTokenResponse, nil
 }

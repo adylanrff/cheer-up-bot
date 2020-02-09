@@ -8,37 +8,31 @@ import (
 )
 
 type TwitterAPI struct {
-	config     *TwitterConfig
-	handler    TwitterHandler
-	httpClient *http.Client
+	config      *TwitterConfig
+	handler     TwitterHandler
+	bearerToken string
 }
 
 func NewTwitterAPI(config *TwitterConfig, handler TwitterHandler) *TwitterAPI {
-	client := http.Client{}
-	return &TwitterAPI{config, handler, &client}
-}
-
-func getBearerToken() string {
-	// TODO: Implement This
-	return "BEARER_TOKEN"
+	bearerToken, err := getBearerToken(config.APIKey, config.APISecretKey)
+	if err != nil {
+		log.Fatal("Error getting bearer token: ", err.Error())
+	}
+	fmt.Println(bearerToken)
+	return &TwitterAPI{config, handler, bearerToken}
 }
 
 func (t *TwitterAPI) streamTweet() (*http.Response, error) {
 	req, err := http.NewRequest("GET", StreamURL, nil)
-	req.BasicAuth()
 	if err != nil {
 		log.Fatal("Error creating HTTP request: ", err.Error())
 		return nil, err
 	}
-	resp, err := t.httpClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	return resp, nil
 }
 
 func (t *TwitterAPI) Connect() error {
-	// TODO: Add Bearer Token Auth
-	bearerToken := getBearerToken()
-	fmt.Println(bearerToken)
-
 	resp, err := t.streamTweet()
 	if err != nil {
 		log.Fatal("Error streaming tweet: ", err.Error())

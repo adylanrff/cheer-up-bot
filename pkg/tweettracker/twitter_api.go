@@ -52,7 +52,7 @@ func (t *TwitterAPI) stream() error {
 	return nil
 }
 
-func (t *TwitterAPI) Run() error {
+func (t *TwitterAPI) Run() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
@@ -62,5 +62,4 @@ func (t *TwitterAPI) Run() error {
 	}()
 
 	wg.Wait()
-	return nil
 }

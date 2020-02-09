@@ -10,6 +10,7 @@ type TwitterAPI struct {
 	config      *TwitterConfig
 	handler     TwitterHandler
 	bearerToken string
+	tweetChan   chan string
 }
 
 func NewTwitterAPI(config *TwitterConfig, handler TwitterHandler) (*TwitterAPI, error) {
@@ -18,7 +19,8 @@ func NewTwitterAPI(config *TwitterConfig, handler TwitterHandler) (*TwitterAPI, 
 		log.Fatal("Error getting bearer token: ", err.Error())
 		return nil, err
 	}
-	return &TwitterAPI{config, handler, bearerToken}, nil
+	tweetChan := make(chan string, 10)
+	return &TwitterAPI{config, handler, bearerToken, tweetChan}, nil
 }
 
 func (t *TwitterAPI) streamTweet() (*http.Response, error) {
@@ -44,18 +46,43 @@ func (t *TwitterAPI) stream() error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println(tweet.Text)
+		if len(tweet.Text) > 0 {
+			t.tweetChan <- tweet.Text
+		}
+	}
+}
+
+func (t *TwitterAPI) handleTweet() error {
+	tweet := <-t.tweetChan
+	err := t.handler.HandleMention(t, tweet)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
 func (t *TwitterAPI) Run() {
 	var wg sync.WaitGroup
-	wg.Add(1)
+	wg.Add(2)
 
+	// goroutine for streaming tweet data
 	go func() {
 		defer wg.Done()
-		t.stream()
+		err := t.stream()
+		if err != nil {
+			log.Println("Error streaming tweets: ", err)
+		}
+	}()
+
+	// gorouting for handling tweets
+	go func() {
+		defer wg.Done()
+		for {
+			err := t.handleTweet()
+			if err != nil {
+				log.Println("Error handling tweet: ", err)
+			}
+		}
 	}()
 
 	wg.Wait()

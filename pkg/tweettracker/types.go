@@ -6,7 +6,7 @@ import (
 )
 
 type TwitterHandler interface {
-	HandleMention() error
+	HandleMention(*TwitterAPI, string) error
 }
 
 // TwitterConfig : contains the twitter API Config

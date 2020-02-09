@@ -13,13 +13,13 @@ type TwitterAPI struct {
 	bearerToken string
 }
 
-func NewTwitterAPI(config *TwitterConfig, handler TwitterHandler) *TwitterAPI {
+func NewTwitterAPI(config *TwitterConfig, handler TwitterHandler) (*TwitterAPI, error) {
 	bearerToken, err := getBearerToken(config.APIKey, config.APISecretKey)
 	if err != nil {
 		log.Fatal("Error getting bearer token: ", err.Error())
+		return nil, err
 	}
-	fmt.Println(bearerToken)
-	return &TwitterAPI{config, handler, bearerToken}
+	return &TwitterAPI{config, handler, bearerToken}, nil
 }
 
 func (t *TwitterAPI) streamTweet() (*http.Response, error) {
@@ -28,21 +28,25 @@ func (t *TwitterAPI) streamTweet() (*http.Response, error) {
 		log.Fatal("Error creating HTTP request: ", err.Error())
 		return nil, err
 	}
+	req.Header.Add("Authorization", "Bearer "+t.bearerToken)
+	req.Header.Add("User-Agent", "CheerMeUpPlease")
 	resp, err := http.DefaultClient.Do(req)
 	return resp, nil
 }
 
-func (t *TwitterAPI) Connect() error {
+func (t *TwitterAPI) Run() error {
 	resp, err := t.streamTweet()
 	if err != nil {
 		log.Fatal("Error streaming tweet: ", err.Error())
 		return err
 	}
+	fmt.Println(resp.StatusCode)
 	for {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			panic(err.Error())
 		}
+		fmt.Println(string(body))
 		if resp.StatusCode == 200 {
 			fmt.Println(ParseTweet(body))
 		}

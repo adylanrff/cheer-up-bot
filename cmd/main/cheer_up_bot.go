@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/adylanrff/cheer-up-bot/internal/config"
@@ -33,7 +34,9 @@ func main() {
 	cheerUpHandler := handler.NewCheerUpHandler()
 
 	fmt.Println("Running bot...")
-	tracker := tweettracker.NewTwitterAPI(&twitterConfig, cheerUpHandler)
-	tracker.Connect()
-
+	tracker, err := tweettracker.NewTwitterAPI(&twitterConfig, cheerUpHandler)
+	if err != nil {
+		log.Panicln("Failed initiating tweet tracker")
+	}
+	tracker.Run()
 }

@@ -1,7 +1,6 @@
 package tweettracker
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -28,13 +27,15 @@ func getBearerToken(consumerKey, consumerKeySecret string) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		log.Fatal("Cannot get Bearer Token")
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal("Error reading response body: ", err.Error())
 		return "", err
 	}
-
-	fmt.Println(string(body))
 
 	bearerTokenResponse, err := ParseBearerTokenResponse(body)
 	if err != nil {

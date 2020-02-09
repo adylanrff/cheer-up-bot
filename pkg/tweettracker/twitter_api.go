@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 )
 
 type TwitterAPI struct {
@@ -33,7 +34,7 @@ func (t *TwitterAPI) streamTweet() (*http.Response, error) {
 	return resp, nil
 }
 
-func (t *TwitterAPI) Run() error {
+func (t *TwitterAPI) stream() error {
 	resp, err := t.streamTweet()
 	if err != nil {
 		log.Fatal("Error streaming tweet: ", err.Error())
@@ -48,5 +49,18 @@ func (t *TwitterAPI) Run() error {
 		log.Println(tweet.Text)
 	}
 
+	return nil
+}
+
+func (t *TwitterAPI) Run() error {
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		defer wg.Done()
+		t.stream()
+	}()
+
+	wg.Wait()
 	return nil
 }

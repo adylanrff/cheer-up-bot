@@ -1,7 +1,6 @@
 package tweettracker
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -40,7 +39,6 @@ func (t *TwitterAPI) stream() error {
 		log.Fatal("Error streaming tweet: ", err.Error())
 		return err
 	}
-	fmt.Println(resp.StatusCode)
 	for {
 		tweet, err := ParseTweet(resp.Body)
 		if err != nil {
@@ -48,7 +46,6 @@ func (t *TwitterAPI) stream() error {
 		}
 		log.Println(tweet.Text)
 	}
-
 	return nil
 }
 

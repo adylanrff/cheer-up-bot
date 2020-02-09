@@ -2,10 +2,10 @@ package tweettracker
 
 import (
 	"encoding/json"
-	"log"
+	"io"
 )
 
-// Tweet : depicts the response body from the streaming Tweet API
+// TweetResponse : depicts the response body from the streaming Tweet API
 type Tweet struct {
 	ID              string `json:"id"`
 	CreatedAt       string `json:"created_at"`
@@ -14,12 +14,12 @@ type Tweet struct {
 	InReplyToUserID string `json:"in_reply_to_user_id"`
 }
 
-func ParseTweet(jsonString []byte) (*Tweet, error) {
-	tweet := new(Tweet)
-	err := json.Unmarshal(jsonString, &tweet)
-	if err != nil {
-		log.Fatal("Failed parsing tweet", err.Error())
-		return nil, err
-	}
-	return tweet, err
+type TweetResponse struct {
+	Data Tweet `json:"data"`
+}
+
+func ParseTweet(reader io.Reader) (Tweet, error) {
+	tweet := new(TweetResponse)
+	json.NewDecoder(reader).Decode(&tweet)
+	return tweet.Data, nil
 }

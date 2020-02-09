@@ -2,7 +2,6 @@ package tweettracker
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -23,7 +22,7 @@ func NewTwitterAPI(config *TwitterConfig, handler TwitterHandler) (*TwitterAPI, 
 }
 
 func (t *TwitterAPI) streamTweet() (*http.Response, error) {
-	req, err := http.NewRequest("GET", StreamURL, nil)
+	req, err := http.NewRequest("GET", SampledStreamURL, nil)
 	if err != nil {
 		log.Fatal("Error creating HTTP request: ", err.Error())
 		return nil, err
@@ -42,14 +41,11 @@ func (t *TwitterAPI) Run() error {
 	}
 	fmt.Println(resp.StatusCode)
 	for {
-		body, err := ioutil.ReadAll(resp.Body)
+		tweet, err := ParseTweet(resp.Body)
 		if err != nil {
-			panic(err.Error())
+			log.Fatal(err)
 		}
-		fmt.Println(string(body))
-		if resp.StatusCode == 200 {
-			fmt.Println(ParseTweet(body))
-		}
+		log.Println(tweet.Text)
 	}
 
 	return nil

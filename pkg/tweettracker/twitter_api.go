@@ -1,9 +1,14 @@
 package tweettracker
 
 import (
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"sync"
+
+	"github.com/dghubble/oauth1"
+	"github.com/dghubble/sling"
 )
 
 type TwitterAPI struct {
@@ -23,7 +28,7 @@ func NewTwitterAPI(config *TwitterConfig, handler TwitterHandler) (*TwitterAPI, 
 	return &TwitterAPI{config, handler, bearerToken, tweetChan}, nil
 }
 
-func (t *TwitterAPI) doRequest(method, url string) (*http.Response, error) {
+func (t *TwitterAPI) doOAuth2Request(method, url string, payload io.Reader) (*http.Response, error) {
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		log.Fatal("Error creating HTTP request: ", err.Error())
@@ -31,12 +36,29 @@ func (t *TwitterAPI) doRequest(method, url string) (*http.Response, error) {
 	}
 	req.Header.Add("Authorization", "Bearer "+t.bearerToken)
 	req.Header.Add("User-Agent", "CheerMeUpPlease")
+	req.Header.Add("Content-Type", "application/json")
+
 	resp, err := http.DefaultClient.Do(req)
 	return resp, nil
 }
 
+func (t *TwitterAPI) doOAuth1Request(method, url string, payload interface{}) (*http.Response, error) {
+	config := oauth1.NewConfig(t.config.APIKey, t.config.APISecretKey)
+	token := oauth1.NewToken(t.config.AccessToken, t.config.AccessTokenSecret)
+	httpClient := config.Client(oauth1.NoContext, token)
+
+	req, err := sling.New().Post(url).QueryStruct(payload).Request()
+	if err != nil {
+		log.Fatal("Error creating HTTP request: ", err.Error())
+		return nil, err
+	}
+
+	resp, err := httpClient.Do(req)
+	return resp, nil
+}
+
 func (t *TwitterAPI) streamTweet() (*http.Response, error) {
-	resp, err := t.doRequest(SampledStreamURL["method"], SampledStreamURL["url"])
+	resp, err := t.doOAuth2Request(SampledStreamURL["method"], SampledStreamURL["url"], nil)
 	if err != nil {
 		log.Fatal("Error sending request: ", err)
 	}
@@ -69,8 +91,18 @@ func (t *TwitterAPI) handleTweet() error {
 	return nil
 }
 
-func (t *TwitterAPI) Tweet() error {
-	return nil
+func (t *TwitterAPI) Tweet(text string) error {
+	payload := &PostTweetRequest{Status: text}
+	resp, err := t.doOAuth1Request(PostTweetURL["method"], PostTweetURL["url"], payload)
+	if err != nil {
+		log.Fatal("Doing request: ", err)
+	}
+	if resp.StatusCode == 200 {
+		return nil
+	}
+	msg, _ := ioutil.ReadAll(resp.Body)
+	log.Fatal(string(msg))
+	return err
 }
 
 func (t *TwitterAPI) Run() {

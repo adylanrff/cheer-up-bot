@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/adylanrff/cheer-up-bot/pkg/tweettracker"
 )
@@ -14,6 +15,9 @@ func NewCheerUpHandler() *CheerUpHandler {
 }
 
 func (c *CheerUpHandler) HandleMention(twitterAPI *tweettracker.TwitterAPI, text string) error {
-	fmt.Println(text)
+	if strings.Contains(text, "Oscar") {
+		fmt.Println("Tweeted")
+		twitterAPI.Tweet(text)
+	}
 	return nil
 }

@@ -9,7 +9,7 @@ import (
 
 func getBearerToken(consumerKey, consumerKeySecret string) (string, error) {
 	payload := strings.NewReader("grant_type=client_credentials")
-	req, err := http.NewRequest("POST", BearerTokenURL, payload)
+	req, err := http.NewRequest(BearerTokenURL["method"], BearerTokenURL["url"], payload)
 
 	req.Header.Add("content-type", "application/x-www-form-urlencoded")
 

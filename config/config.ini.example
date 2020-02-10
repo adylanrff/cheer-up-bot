@@ -3,3 +3,6 @@ api_key = <CHANGE_THIS>
 api_secret_key = <CHANGE_THIS>
 access_token = <CHANGE_THIS>
 access_token_secret = <CHANGE_THIS>
+username = <CHANGE_THIS>
+[app]
+http_client_timeout = 10

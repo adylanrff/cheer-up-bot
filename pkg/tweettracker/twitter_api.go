@@ -23,8 +23,8 @@ func NewTwitterAPI(config *TwitterConfig, handler TwitterHandler) (*TwitterAPI, 
 	return &TwitterAPI{config, handler, bearerToken, tweetChan}, nil
 }
 
-func (t *TwitterAPI) streamTweet() (*http.Response, error) {
-	req, err := http.NewRequest("GET", SampledStreamURL, nil)
+func (t *TwitterAPI) doRequest(method, url string) (*http.Response, error) {
+	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		log.Fatal("Error creating HTTP request: ", err.Error())
 		return nil, err
@@ -32,6 +32,14 @@ func (t *TwitterAPI) streamTweet() (*http.Response, error) {
 	req.Header.Add("Authorization", "Bearer "+t.bearerToken)
 	req.Header.Add("User-Agent", "CheerMeUpPlease")
 	resp, err := http.DefaultClient.Do(req)
+	return resp, nil
+}
+
+func (t *TwitterAPI) streamTweet() (*http.Response, error) {
+	resp, err := t.doRequest(SampledStreamURL["method"], SampledStreamURL["url"])
+	if err != nil {
+		log.Fatal("Error sending request: ", err)
+	}
 	return resp, nil
 }
 
@@ -58,6 +66,10 @@ func (t *TwitterAPI) handleTweet() error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (t *TwitterAPI) Tweet() error {
 	return nil
 }
 

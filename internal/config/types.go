@@ -9,6 +9,7 @@ type Config struct {
 	AccessToken       string
 	AccessTokenSecret string
 	HTTPClientTimeout int
+	TwitterUsername   string
 }
 
 func NewConfig(cfg *ini.File) *Config {
@@ -19,6 +20,7 @@ func NewConfig(cfg *ini.File) *Config {
 		cfg.Section("twitter").Key("access_token").String(),
 		cfg.Section("twitter").Key("access_token_secret").String(),
 		cfg.Section("app").Key("http_client_timeout").InInt(0, []int{5, 10}),
+		cfg.Section("twitter").Key("username").String(),
 	}
 	return &config
 }

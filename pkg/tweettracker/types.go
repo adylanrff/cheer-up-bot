@@ -1,7 +1,7 @@
 package tweettracker
 
 type TwitterHandler interface {
-	HandleMention(*TwitterAPI, string) error
+	HandleMention(*TwitterAPI, *Tweet) error
 }
 
 // TwitterConfig : contains the twitter API Config
@@ -22,8 +22,9 @@ type BearerTokenResponse struct {
 }
 
 type PostTweetRequest struct {
-	Status            string `url:"status"`
-	InReplyToStatusID string `url:"in_reply_to_status_id"`
+	Status                    string `url:"status"`
+	InReplyToStatusID         string `url:"in_reply_to_status_id"`
+	AutoPopulateReplyMetadata bool   `json:"auto_populate_reply_metadata"`
 }
 
 type TweetFilterRule struct {
@@ -37,4 +38,9 @@ type TweetFilterRuleRequest struct {
 
 type TweetFilterRuleResponse struct {
 	Data []TweetFilterRule `json:"data"`
+}
+
+type GetUserRequest struct {
+	ScreenName []string `url:"screen_name"`
+	UserID     []string `url:"user_id"`
 }

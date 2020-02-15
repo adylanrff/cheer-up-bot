@@ -38,3 +38,8 @@ var GetStreamFilterRuleURL = map[string]string{
 	"method": "GET",
 	"url":    "https://api.twitter.com/labs/1/tweets/stream/filter/rules",
 }
+
+var GetUserInfoURL = map[string]string{
+	"method": "GET",
+	"url":    "https://api.twitter.com/1.1/users/lookup.json",
+}

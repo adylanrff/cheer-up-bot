@@ -34,7 +34,7 @@ func main() {
 	cheerUpHandler := cheerup.NewCheerUpHandler()
 	cheerUpFilterRules := cheerup.NewCheerUpRules(appConfig)
 
-	fmt.Println("Running bot...")
+	log.Println("Running bot...")
 	tracker, err := tweettracker.NewTwitterAPI(&twitterConfig, cheerUpHandler, cheerUpFilterRules)
 	if err != nil {
 		log.Panicln("Failed initiating tweet tracker")
@@ -45,7 +45,8 @@ func main() {
 		log.Panicln("Error getting rules: ", err)
 	}
 
-	fmt.Println(rules)
+	log.Println("Filter rules: ", rules)
 
+	log.Println("Streaming tweets....")
 	tracker.Run()
 }

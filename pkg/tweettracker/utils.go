@@ -25,8 +25,6 @@ func getBearerToken(consumerKey, consumerKeySecret string) (string, error) {
 
 	if resp.StatusCode != 200 {
 		log.Fatal("Cannot get Bearer Token")
-	} else {
-		log.Println("Get bearer token success")
 	}
 
 	return bearerTokenResponse.AccessToken, nil

@@ -25,3 +25,16 @@ type PostTweetRequest struct {
 	Status            string `url:"status"`
 	InReplyToStatusID string `url:"in_reply_to_status_id"`
 }
+
+type TweetFilterRule struct {
+	Value string `json:"value"`
+	Tag   string `json:"tag"`
+}
+
+type TweetFilterRuleRequest struct {
+	Add []TweetFilterRule `json:"add"`
+}
+
+type TweetFilterRuleResponse struct {
+	Data []TweetFilterRule `json:"data"`
+}

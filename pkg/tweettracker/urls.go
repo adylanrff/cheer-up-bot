@@ -28,3 +28,13 @@ var PostTweetURL = map[string]string{
 	"method": "POST",
 	"url":    "https://api.twitter.com/1.1/statuses/update.json",
 }
+
+var AddStreamFilterRuleURL = map[string]string{
+	"method": "POST",
+	"url":    "https://api.twitter.com/labs/1/tweets/stream/filter/rules",
+}
+
+var GetStreamFilterRuleURL = map[string]string{
+	"method": "GET",
+	"url":    "https://api.twitter.com/labs/1/tweets/stream/filter/rules",
+}

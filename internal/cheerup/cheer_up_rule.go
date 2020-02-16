@@ -11,8 +11,8 @@ func NewCheerUpRules(cfg *config.Config) []twitter.TweetFilterRule {
 	var rules []twitter.TweetFilterRule
 
 	mentionRule := twitter.TweetFilterRule{
-		Value: fmt.Sprintf("@%s", cfg.TwitterUsername),
-		Tag:   "mention",
+		Value: fmt.Sprintf("@%s semangat", cfg.TwitterUsername),
+		Tag:   "semangat",
 	}
 
 	rules = append(rules, mentionRule)

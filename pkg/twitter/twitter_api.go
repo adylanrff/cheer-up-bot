@@ -48,7 +48,17 @@ func (t *TwitterAPI) doOAuth1Request(method, url string, payload interface{}) (*
 	token := oauth1.NewToken(t.config.AccessToken, t.config.AccessTokenSecret)
 	httpClient := config.Client(oauth1.NoContext, token)
 
-	req, err := sling.New().Post(url).QueryStruct(payload).Request()
+	var req *http.Request
+	var err error
+	s := sling.New().QueryStruct(payload)
+
+	switch method {
+	case "GET":
+		req, err = s.Get(url).Request()
+	case "POST":
+		req, err = s.Post(url).Request()
+	}
+
 	if err != nil {
 		log.Fatal("Error creating HTTP request: ", err.Error())
 		return nil, err
@@ -58,7 +68,38 @@ func (t *TwitterAPI) doOAuth1Request(method, url string, payload interface{}) (*
 	return resp, nil
 }
 
+func (t *TwitterAPI) ResetRules() {
+
+	// Get current rules
+	var ruleValues []string
+	rules, err := t.GetRules()
+	if err != nil {
+		log.Panicln("Error getting rules: ", err)
+	}
+	for _, rule := range rules {
+		ruleValues = append(ruleValues, rule.Value)
+	}
+
+	// Reset rules
+	err = t.DeleteAllRules(ruleValues)
+	if err != nil {
+		log.Fatal("Error resetting rules: ", err)
+	}
+	err = t.AddRule()
+	if err != nil {
+		log.Fatal("Error adding rule: ", err)
+	}
+
+	newRules, err := t.GetRules()
+	if err != nil {
+		log.Panicln("Error getting rules: ", err)
+	}
+	log.Println("Filter rules: ", newRules)
+
+}
+
 func (t *TwitterAPI) Run() {
+	t.ResetRules()
 	var wg sync.WaitGroup
 	wg.Add(2)
 

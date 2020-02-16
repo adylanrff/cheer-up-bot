@@ -12,37 +12,58 @@ import (
 
 // TweetResponse : depicts the response body from the streaming Tweet API
 type Tweet struct {
-	ID                        string   `json:"id"`
-	CreatedAt                 string   `json:"created_at"`
-	Text                      string   `json:"text"`
-	AuthorID                  string   `json:"author_id"`
-	InReplyToStatusID         string   `json:"in_reply_to_status_id"`
-	AutoPopulateReplyMetadata bool     `json:"auto_populate_reply_metadata"`
-	MediaID                   []string `json:"media_ids"`
+	ID                        string            `json:"id"`
+	CreatedAt                 string            `json:"created_at"`
+	Text                      string            `json:"text"`
+	AuthorID                  string            `json:"author_id"`
+	InReplyToStatusID         string            `json:"in_reply_to_status_id"`
+	InReplyToUserID           string            `json:"in_reply_to_user_id"`
+	AutoPopulateReplyMetadata bool              `json:"auto_populate_reply_metadata"`
+	MediaID                   []string          `json:"media_ids"`
+	MatchingRules             []TweetFilterRule `json:"matching_rules"`
 	Image                     []image.Image
 }
 
 type TweetResponse struct {
-	Data Tweet `json:"data"`
+	Data          Tweet             `json:"data"`
+	MatchingRules []TweetFilterRule `json:"matching_rules"`
 }
 
 func ParseTweet(reader io.Reader) (Tweet, error) {
 	tweet := new(TweetResponse)
 	json.NewDecoder(reader).Decode(&tweet)
+	tweet.Data.MatchingRules = tweet.MatchingRules
 	return tweet.Data, nil
 }
 
 func (t *TwitterAPI) AddRule() error {
-	request := TweetFilterRuleRequest{Add: t.rules}
+	request := AddTweetFilterRuleRequest{Add: t.rules}
 	payload, err := json.Marshal(request)
 	if err != nil {
 		log.Fatal("Error marshalling Twitter Rule: ", err)
 		return err
 	}
 
-	resp, err := t.doOAuth2Request(AddStreamFilterRuleURL["method"], AddStreamFilterRuleURL["url"], bytes.NewBuffer(payload))
+	resp, err := t.doOAuth2Request(SetStreamFilterRuleURL["method"], SetStreamFilterRuleURL["url"], bytes.NewBuffer(payload))
 	if resp.StatusCode != 201 {
 		log.Fatal("Adding rule failed: ", resp.StatusCode)
+	}
+
+	return nil
+}
+
+func (t *TwitterAPI) DeleteAllRules(values []string) error {
+	request := DeleteTweetFilterRuleRequest{}
+	request.Delete.Value = values
+	payload, err := json.Marshal(request)
+	if err != nil {
+		log.Fatal("Error marshalling Twitter Rule: ", err)
+		return err
+	}
+
+	resp, err := t.doOAuth2Request(SetStreamFilterRuleURL["method"], SetStreamFilterRuleURL["url"], bytes.NewBuffer(payload))
+	if resp.StatusCode != 200 {
+		log.Fatal("Deleting rule failed: ", resp.StatusCode)
 	}
 
 	return nil
@@ -77,15 +98,13 @@ func (t *TwitterAPI) streamTweet() (*http.Response, error) {
 	if err != nil {
 		log.Fatal("Error sending request: ", err)
 	}
+	if resp.StatusCode != 200 {
+		log.Fatal("Error streaming tweet: ", err)
+	}
 	return resp, nil
 }
 
 func (t *TwitterAPI) stream() error {
-	err := t.AddRule()
-	if err != nil {
-		log.Fatal("Error adding rule: ", err)
-	}
-
 	resp, err := t.streamTweet()
 	if err != nil {
 		log.Fatal("Error streaming tweet: ", err.Error())
@@ -109,6 +128,34 @@ func (t *TwitterAPI) handleTweet() error {
 		return err
 	}
 	return nil
+}
+
+func (t *TwitterAPI) GetTweet(tweetID string) (*Tweet, error) {
+	payload := GetTweetRequest{ID: tweetID}
+	resp, err := t.doOAuth1Request(GetTweetURL["method"], GetTweetURL["url"], payload)
+
+	if err != nil {
+		log.Fatal("Fail getting tweet: ", err)
+		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		log.Println("Fail getting tweet: ", resp.StatusCode)
+		msg, _ := ioutil.ReadAll(resp.Body)
+		log.Fatal("Error: ", string(msg))
+		return nil, nil
+	}
+
+	var tweet Tweet
+	msg, _ := ioutil.ReadAll(resp.Body)
+	err = json.Unmarshal(msg, &tweet)
+
+	if err != nil {
+		log.Fatal("Fail unmarshalling tweet: ", err)
+		return nil, err
+	}
+
+	return &tweet, nil
 }
 
 func (t *TwitterAPI) Tweet(tweet *Tweet) error {

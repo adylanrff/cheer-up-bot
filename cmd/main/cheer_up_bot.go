@@ -39,13 +39,6 @@ func main() {
 	if err != nil {
 		log.Panicln("Failed initiating tweet tracker")
 	}
-	// Validate rules
-	rules, err := tracker.GetRules()
-	if err != nil {
-		log.Panicln("Error getting rules: ", err)
-	}
-
-	log.Println("Filter rules: ", rules)
 
 	log.Println("Streaming tweets....")
 	tracker.Run()

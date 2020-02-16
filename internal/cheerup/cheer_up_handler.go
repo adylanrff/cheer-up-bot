@@ -3,7 +3,6 @@ package cheerup
 import (
 	"fmt"
 	"log"
-	s "strings"
 
 	"github.com/adylanrff/cheer-up-bot/pkg/twitter"
 )
@@ -17,23 +16,33 @@ func NewCheerUpHandler() *CheerUpHandler {
 
 func (c *CheerUpHandler) HandleMention(twitterAPI *twitter.TwitterAPI, tweet *twitter.Tweet) error {
 	var response *twitter.Tweet
-	if s.Contains(s.ToLower(tweet.Text), "semangat") {
-		response = c.CreateSemangatResponse(twitterAPI, tweet)
+	for _, rule := range tweet.MatchingRules {
+		if rule.Tag == "semangat" {
+			response = c.CreateSemangatResponse(twitterAPI, tweet)
+		}
 	}
 
-	err := twitterAPI.Tweet(response)
-	if err != nil {
-		log.Fatal("Error responding to mentions: ", err)
+	if response != nil {
+		err := twitterAPI.Tweet(response)
+		if err != nil {
+			log.Fatal("Error responding to mentions: ", err)
+		}
 	}
 
 	return nil
 }
 
 func (c *CheerUpHandler) CreateSemangatResponse(twitterAPI *twitter.TwitterAPI, tweet *twitter.Tweet) *twitter.Tweet {
-	user, err := twitterAPI.GetUser(tweet.AuthorID)
+	userID := tweet.InReplyToUserID
+	if userID == "" {
+		userID = tweet.AuthorID
+	}
+	user, err := twitterAPI.GetUser(userID)
+
 	if err != nil {
 		log.Println("Error fetching user: ", err)
 	}
+
 	response := &twitter.Tweet{
 		Text:              fmt.Sprintf("Semangat %s!", user.Name),
 		InReplyToStatusID: tweet.ID,

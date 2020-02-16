@@ -1,4 +1,4 @@
-package tweettracker
+package twitter
 
 type TwitterHandler interface {
 	HandleMention(*TwitterAPI, *Tweet) error
@@ -22,9 +22,10 @@ type BearerTokenResponse struct {
 }
 
 type PostTweetRequest struct {
-	Status                    string `url:"status"`
-	InReplyToStatusID         string `url:"in_reply_to_status_id"`
-	AutoPopulateReplyMetadata bool   `json:"auto_populate_reply_metadata"`
+	Status                    string   `url:"status"`
+	InReplyToStatusID         string   `url:"in_reply_to_status_id"`
+	AutoPopulateReplyMetadata bool     `url:"auto_populate_reply_metadata"`
+	MediaID                   []string `url:"media_ids"`
 }
 
 type TweetFilterRule struct {
@@ -43,4 +44,9 @@ type TweetFilterRuleResponse struct {
 type GetUserRequest struct {
 	ScreenName []string `url:"screen_name"`
 	UserID     []string `url:"user_id"`
+}
+
+type UploadMediaRequest struct {
+	MediaData     string `json:"media_data"`
+	MediaCategory string `json"media_category"`
 }

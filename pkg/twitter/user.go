@@ -1,4 +1,4 @@
-package tweettracker
+package twitter
 
 import (
 	"encoding/json"

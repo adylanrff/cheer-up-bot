@@ -1,8 +1,9 @@
-package tweettracker
+package twitter
 
 import (
 	"bytes"
 	"encoding/json"
+	"image"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,12 +12,14 @@ import (
 
 // TweetResponse : depicts the response body from the streaming Tweet API
 type Tweet struct {
-	ID                        string `json:"id"`
-	CreatedAt                 string `json:"created_at"`
-	Text                      string `json:"text"`
-	AuthorID                  string `json:"author_id"`
-	InReplyToStatusID         string `json:"in_reply_to_status_id"`
-	AutoPopulateReplyMetadata bool   `json:"auto_populate_reply_metadata"`
+	ID                        string   `json:"id"`
+	CreatedAt                 string   `json:"created_at"`
+	Text                      string   `json:"text"`
+	AuthorID                  string   `json:"author_id"`
+	InReplyToStatusID         string   `json:"in_reply_to_status_id"`
+	AutoPopulateReplyMetadata bool     `json:"auto_populate_reply_metadata"`
+	MediaID                   []string `json:"media_ids"`
+	Image                     []image.Image
 }
 
 type TweetResponse struct {
@@ -109,11 +112,21 @@ func (t *TwitterAPI) handleTweet() error {
 }
 
 func (t *TwitterAPI) Tweet(tweet *Tweet) error {
+	if len(tweet.Image) > 0 {
+		for _, img := range tweet.Image {
+			media, err := t.UploadImage(img)
+			log.Fatal("Error uploading image: ", err)
+			tweet.MediaID = append(tweet.MediaID, media.MediaID)
+		}
+	}
+
 	payload := &PostTweetRequest{
 		Status:                    tweet.Text,
 		InReplyToStatusID:         tweet.InReplyToStatusID,
 		AutoPopulateReplyMetadata: true,
+		MediaID:                   tweet.MediaID,
 	}
+
 	resp, err := t.doOAuth1Request(PostTweetURL["method"], PostTweetURL["url"], payload)
 	if err != nil {
 		log.Fatal("Doing request: ", err)

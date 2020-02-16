@@ -1,6 +1,10 @@
-package tweettracker
+package twitter
 
 import (
+	"bytes"
+	"encoding/base64"
+	"image"
+	"image/png"
 	"log"
 
 	"github.com/dghubble/sling"
@@ -28,4 +32,19 @@ func getBearerToken(consumerKey, consumerKeySecret string) (string, error) {
 	}
 
 	return bearerTokenResponse.AccessToken, nil
+}
+
+func convertImageToBase64String(img image.Image) (string, error) {
+	var base64img []byte
+	buf := new(bytes.Buffer)
+	imgBytes := buf.Bytes()
+	err := png.Encode(buf, img)
+
+	if err != nil {
+		log.Fatal("PNG encoding failed", err)
+		return "", err
+	}
+
+	base64.StdEncoding.Encode(imgBytes, base64img)
+	return string(base64img), nil
 }

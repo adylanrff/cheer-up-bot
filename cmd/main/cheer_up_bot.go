@@ -7,7 +7,7 @@ import (
 
 	"github.com/adylanrff/cheer-up-bot/internal/cheerup"
 	"github.com/adylanrff/cheer-up-bot/internal/config"
-	"github.com/adylanrff/cheer-up-bot/pkg/tweettracker"
+	"github.com/adylanrff/cheer-up-bot/pkg/twitter"
 	"gopkg.in/ini.v1"
 )
 
@@ -23,7 +23,7 @@ func main() {
 
 	appConfig := config.NewConfig(cfgFile)
 
-	twitterConfig := tweettracker.TwitterConfig{
+	twitterConfig := twitter.TwitterConfig{
 		appConfig.APIKey,
 		appConfig.APISecretKey,
 		appConfig.AccessToken,
@@ -35,7 +35,7 @@ func main() {
 	cheerUpFilterRules := cheerup.NewCheerUpRules(appConfig)
 
 	log.Println("Running bot...")
-	tracker, err := tweettracker.NewTwitterAPI(&twitterConfig, cheerUpHandler, cheerUpFilterRules)
+	tracker, err := twitter.NewTwitterAPI(&twitterConfig, cheerUpHandler, cheerUpFilterRules)
 	if err != nil {
 		log.Panicln("Failed initiating tweet tracker")
 	}

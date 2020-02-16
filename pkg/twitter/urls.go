@@ -1,4 +1,4 @@
-package tweettracker
+package twitter
 
 // FilteredStreamURL : URL for Filtered Twitter Streaming API
 var FilteredStreamURL = map[string]string{
@@ -42,4 +42,9 @@ var GetStreamFilterRuleURL = map[string]string{
 var GetUserInfoURL = map[string]string{
 	"method": "GET",
 	"url":    "https://api.twitter.com/1.1/users/lookup.json",
+}
+
+var UploadImageURL = map[string]string{
+	"method": "POST",
+	"url":    "https://upload.twitter.com/1.1/media/upload.json",
 }

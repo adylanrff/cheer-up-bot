@@ -48,5 +48,5 @@ type GetUserRequest struct {
 
 type UploadMediaRequest struct {
 	MediaData     string `json:"media_data"`
-	MediaCategory string `json"media_category"`
+	MediaCategory string `json:"media_category"`
 }
